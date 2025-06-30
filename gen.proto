@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package pb;
+
+option go_package = "./proto";
+
+message Market {
+  string market_id = 1;
+  string name = 2;
+  bool enabled = 3;
+  string deleted_at = 4; // Empty string if not deleted
+}
+
+message ViewMarketsRequest {
+  repeated string user_roles = 1;
+}
+
+message ViewMarketsResponse {
+  repeated Market markets = 1;
+}
+
+message CreateOrderRequest {
+  string user_id = 1;
+  string market_id = 2;
+  string order_type = 3; // e.g., "limit", "market"
+  double price = 4;
+  double quantity = 5;
+}
+
+message CreateOrderResponse {
+  string order_id = 1;
+  string status = 2; // e.g., "created"
+}
+
+message GetOrderStatusRequest {
+  string order_id = 1;
+  string user_id = 2;
+}
+
+message GetOrderStatusResponse {
+  string status = 1; // e.g., "created", "filled", "cancelled"
+}
+
+message OrderUpdate {
+  string order_id = 1;
+  string status = 2;
+  string updated_at = 3; // ISO 8601 timestamp
+}
+
+service SpotInstrumentService {
+  rpc ViewMarkets(ViewMarketsRequest) returns (ViewMarketsResponse);
+}
+
+service OrderService {
+  rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
+  rpc GetOrderStatus(GetOrderStatusRequest) returns (GetOrderStatusResponse);
+  rpc StreamOrderUpdates(GetOrderStatusRequest) returns (stream OrderUpdate);
+}
