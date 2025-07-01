@@ -4,11 +4,12 @@ package pb;
 
 option go_package = "./proto";
 
+// Сообщения для SpotInstrumentService
 message Market {
   string market_id = 1;
   string name = 2;
   bool enabled = 3;
-  string deleted_at = 4; // Empty string if not deleted
+  google.protobuf.Timestamp deleted_at = 4;
 }
 
 message ViewMarketsRequest {
@@ -19,17 +20,30 @@ message ViewMarketsResponse {
   repeated Market markets = 1;
 }
 
+// Сообщения для OrderService
+message Order {
+  string order_id = 1;
+  string user_id = 2;
+  string market_id = 3;
+  string order_type = 4;
+  double price = 5;
+  double quantity = 6;
+  string status = 7;
+  google.protobuf.Timestamp created_at = 8;
+}
+
 message CreateOrderRequest {
   string user_id = 1;
   string market_id = 2;
-  string order_type = 3; // e.g., "limit", "market"
+  string order_type = 3;
   double price = 4;
   double quantity = 5;
+  repeated string user_roles = 6;
 }
 
 message CreateOrderResponse {
   string order_id = 1;
-  string status = 2; // e.g., "created"
+  string status = 2;
 }
 
 message GetOrderStatusRequest {
@@ -38,21 +52,30 @@ message GetOrderStatusRequest {
 }
 
 message GetOrderStatusResponse {
-  string status = 1; // e.g., "created", "filled", "cancelled"
+  string status = 1;
 }
 
-message OrderUpdate {
+message StreamOrderUpdatesRequest {
+  string order_id = 1;
+  string user_id = 2;
+}
+
+message StreamOrderUpdatesResponse {
   string order_id = 1;
   string status = 2;
-  string updated_at = 3; // ISO 8601 timestamp
 }
 
+// Сервис SpotInstrumentService
 service SpotInstrumentService {
   rpc ViewMarkets(ViewMarketsRequest) returns (ViewMarketsResponse);
 }
 
+// Сервис OrderService
 service OrderService {
   rpc CreateOrder(CreateOrderRequest) returns (CreateOrderResponse);
   rpc GetOrderStatus(GetOrderStatusRequest) returns (GetOrderStatusResponse);
-  rpc StreamOrderUpdates(GetOrderStatusRequest) returns (stream OrderUpdate);
+  rpc StreamOrderUpdates(StreamOrderUpdatesRequest) returns (stream StreamOrderUpdatesResponse);
 }
+
+// Импорт Google API для использования Timestamp
+import "google/protobuf/timestamp.proto";
